@@ -107,8 +107,6 @@ HTML_PAGE = """<!doctype html>
     .mono { font-family: monospace; }
     .hint { color: #444; }
     .fun-panel { border: 1px solid #ddd; border-radius: 10px; padding: 10px; background: #fafafa; }
-    .fun-panel h3 { margin: 0 0 8px; font-size: 18px; }
-    .fun-panel p { margin: 0 0 10px; color: #555; }
     .fun-panel img { width: 100%; height: auto; border-radius: 8px; display: block; }
     @media (max-width: 900px) {
       .content-wrap { grid-template-columns: 1fr; }
@@ -166,9 +164,7 @@ HTML_PAGE = """<!doctype html>
       <div id=\"board\"></div>
     </div>
     <aside class=\"fun-panel\">
-      <h3>Bonuspanel</h3>
-      <p>En rolig sidobild under matchen.</p>
-      <img src=\"https://upload.wikimedia.org/wikipedia/commons/5/56/Donald_Trump_official_portrait.jpg\" alt=\"Bonusbild\" />
+      <img src=\"https://upload.wikimedia.org/wikipedia/commons/d/da/Donald_Trump_%2825245031795%29.jpg\" alt=\"Sidobild\" />
     </aside>
   </div>
 
