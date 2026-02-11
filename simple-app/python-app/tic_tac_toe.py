@@ -164,7 +164,7 @@ HTML_PAGE = """<!doctype html>
       <div id=\"board\"></div>
     </div>
     <aside class=\"side-image\">
-      <h3>WANNA PLAY?</h3>
+      <h3>WANNA PLAY? OR ARE YOU A WINDMILL?</h3>
       <img src=\"https://i.insider.com/62f4b336cc15bf00182fe160?width=1000&format=jpeg&auto=webp\" alt=\"Sidobild\" />
     </aside>
   </div>
