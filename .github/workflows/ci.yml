@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: Docker CI
 
 on:
   push:
@@ -7,18 +7,28 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  docker-build:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Say hello
-      run: echo "Hello from CI/CD! 🚀"
+    - name: Build Docker image
+      run: docker build -t gears-of-failure:${{ github.sha }} .
 
-    - name: Show current directory
-      run: pwd
+    - name: List Docker images
+      run: docker images
 
-    - name: List files
-      run: ls -la
+    - name: Test Docker image runs
+      run: |
+        docker run -d --name test-container -p 3000:3000 gears-of-failure:${{ github.sha }}
+        sleep 5
+        docker ps -a
+        docker logs test-container
+        if ! docker ps --format '{{.Names}}' | grep -q '^test-container$'; then
+          echo "Container did not stay running"
+          exit 1
+        fi
+        docker stop test-container
+        docker rm test-container
