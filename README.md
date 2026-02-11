@@ -2,33 +2,42 @@
 
 ![CI Status](https://github.com/andreedvardsson/GearsOfFailure/actions/workflows/ci.yml/badge.svg)
 
-Minimal Python app for quick local testing.
+Tvåspelar Tic-Tac-Toe som körs publikt på Render.
 
-## Open via GitHub
+## Play Online
 
-Run directly in GitHub Codespaces:
+- App: `https://gearsoffailure.onrender.com`
+- Health: `https://gearsoffailure.onrender.com/health`
 
-1. Open repo on GitHub.
-2. Click `Code` -> `Codespaces` -> `Create codespace on main`.
-3. In terminal:
+## How It Works
+
+1. Spelare 1 öppnar appen och klickar `Skapa spel`.
+2. En spelkod skapas och en länk visas.
+3. Spelare 1 delar länken eller koden med spelare 2.
+4. Spelare 2 öppnar länken (eller skriver in koden) och klickar `Gå med`.
+5. Spelet startar och spelarna turas om att lägga `X` och `O`.
+6. När spelet är slut visas popup `Spela igen?` för båda.
+7. Om båda väljer `Ja` startar ny runda i samma session.
+8. Om någon väljer `Nej` avslutas sessionen.
+
+## Game Rules
+
+1. Spelet spelas på ett 3x3-rutnät.
+2. En spelare är `X`, den andra är `O`.
+3. Man får bara spela i tomma rutor.
+4. Tre i rad (vågrätt, lodrätt eller diagonalt) vinner.
+5. Om alla rutor fylls utan vinnare blir det oavgjort.
+
+## Notes
+
+- På Render Free kan appen sova vid inaktivitet.
+- Första request efter vila kan ta längre tid.
+
+## Run Locally
 
 ```bash
 cd simple-app/python-app
 python3 tic_tac_toe.py
 ```
 
-4. In `Ports`, make `8001` public and open the URL.
-
-## Run
-
-```bash
-cd simple-app/python-app
-python3 tic_tac_toe.py
-```
-
-## Endpoints
-
-- `GET /` returns a hello message
-- `GET /health` returns JSON status
-
-Default URL: `http://localhost:8001`
+Local URL: `http://localhost:8001`
