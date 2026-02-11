@@ -19,8 +19,11 @@ jobs:
       with:
         python-version: "3.12"
 
-    - name: Run Tic-Tac-Toe API tests
-      run: python -m unittest discover -s simple-app/python-app/tests -p "test_*.py" -v
+    - name: Install dependencies
+      run: pip install -r simple-app/python-app/requirements.txt
+
+    - name: Run tests
+      run: pytest simple-app/python-app/tests -v
 
     - name: Build Docker image
       run: docker build -t gears-of-failure:${{ github.sha }} .
@@ -28,15 +31,12 @@ jobs:
     - name: List Docker images
       run: docker images
 
-    - name: Test Docker image runs
+    - name: Health check
       run: |
         docker run -d --name test-container -p 3000:3000 gears-of-failure:${{ github.sha }}
-        sleep 5
+        sleep 10
         docker ps -a
         docker logs test-container
-        if ! docker ps --format '{{.Names}}' | grep -q '^test-container$'; then
-          echo "Container did not stay running"
-          exit 1
-        fi
+        curl -f http://localhost:3000/api/health || exit 1
         docker stop test-container
         docker rm test-container
