@@ -8,6 +8,8 @@ import threading
 import time
 
 PORT = int(os.getenv("PORT", "8001"))
+BOARD_SIZE = 5
+CELL_COUNT = BOARD_SIZE * BOARD_SIZE
 
 games = {}
 games_lock = threading.Lock()
@@ -22,19 +24,28 @@ def new_token():
 
 
 def check_winner(board):
-    lines = [
-        (0, 1, 2),
-        (3, 4, 5),
-        (6, 7, 8),
-        (0, 3, 6),
-        (1, 4, 7),
-        (2, 5, 8),
-        (0, 4, 8),
-        (2, 4, 6),
-    ]
-    for a, b, c in lines:
-        if board[a] != " " and board[a] == board[b] == board[c]:
-            return board[a]
+    # Rows
+    for row in range(BOARD_SIZE):
+        start = row * BOARD_SIZE
+        line = board[start : start + BOARD_SIZE]
+        if line[0] != " " and all(cell == line[0] for cell in line):
+            return line[0]
+
+    # Columns
+    for col in range(BOARD_SIZE):
+        line = [board[row * BOARD_SIZE + col] for row in range(BOARD_SIZE)]
+        if line[0] != " " and all(cell == line[0] for cell in line):
+            return line[0]
+
+    # Diagonals
+    diag_lr = [board[i * BOARD_SIZE + i] for i in range(BOARD_SIZE)]
+    if diag_lr[0] != " " and all(cell == diag_lr[0] for cell in diag_lr):
+        return diag_lr[0]
+
+    diag_rl = [board[i * BOARD_SIZE + (BOARD_SIZE - 1 - i)] for i in range(BOARD_SIZE)]
+    if diag_rl[0] != " " and all(cell == diag_rl[0] for cell in diag_rl):
+        return diag_rl[0]
+
     if all(cell != " " for cell in board):
         return "draw"
     return None
@@ -49,7 +60,7 @@ def role_for_token(game, token):
 
 
 def reset_round(game):
-    game["board"] = [" "] * 9
+    game["board"] = [" "] * CELL_COUNT
     game["turn"] = random.choice(["X", "O"])
     game["winner"] = None
     game["rematch"] = {
@@ -102,8 +113,8 @@ HTML_PAGE = """<!doctype html>
     input { padding: 8px; }
     .content-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; margin-top: 12px; }
     .game-column { min-width: 0; }
-    #board { margin-top: 18px; display: grid; grid-template-columns: repeat(3, 90px); gap: 8px; }
-    .cell { width: 90px; height: 90px; font-size: 36px; font-weight: bold; }
+    #board { margin-top: 18px; display: grid; grid-template-columns: repeat(5, 72px); gap: 8px; }
+    .cell { width: 72px; height: 72px; font-size: 30px; font-weight: bold; }
     .mono { font-family: monospace; }
     .hint { color: #444; }
     .side-image h3 { margin: 0 0 8px; font-size: 22px; letter-spacing: 0.04em; }
@@ -462,7 +473,7 @@ class Handler(BaseHTTPRequestHandler):
 
                 token_x = new_token()
                 games[game_id] = {
-                    "board": [" "] * 9,
+                    "board": [" "] * CELL_COUNT,
                     "players": {"X": token_x, "O": None},
                     "turn": random.choice(["X", "O"]),
                     "winner": None,
@@ -507,8 +518,10 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_json(400, {"error": "game_id and token are required"})
                 return
 
-            if not isinstance(position, int) or not 0 <= position <= 8:
-                self._send_json(400, {"error": "position must be an integer 0-8"})
+            if not isinstance(position, int) or not 0 <= position < CELL_COUNT:
+                self._send_json(
+                    400, {"error": f"position must be an integer 0-{CELL_COUNT - 1}"}
+                )
                 return
 
             with games_lock:
