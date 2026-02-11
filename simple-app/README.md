@@ -2,6 +2,19 @@
 
 Two-player Tic-Tac-Toe with invite code and browser UI.
 
+## Open via GitHub (Codespaces)
+
+1. Open this repo on GitHub.
+2. Click `Code` -> `Codespaces` -> `Create codespace on main`.
+3. In the Codespaces terminal run:
+
+```bash
+cd simple-app/python-app
+python3 tic_tac_toe.py
+```
+
+4. Open the `Ports` tab, set port `8001` visibility to `Public`, then open the URL.
+
 ## Run
 
 ```bash

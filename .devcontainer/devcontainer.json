@@ -1,0 +1,12 @@
+{
+  "name": "GearsOfFailure Tic-Tac-Toe",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bullseye",
+  "forwardPorts": [8001],
+  "portsAttributes": {
+    "8001": {
+      "label": "Tic-Tac-Toe",
+      "onAutoForward": "openPreview"
+    }
+  },
+  "postCreateCommand": "python3 --version"
+}
