@@ -14,6 +14,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Run Tic-Tac-Toe API tests
+      run: python -m unittest discover -s simple-app/python-app/tests -p "test_*.py" -v
+
     - name: Build Docker image
       run: docker build -t gears-of-failure:${{ github.sha }} .
 
