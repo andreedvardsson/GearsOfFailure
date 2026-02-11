@@ -8,7 +8,7 @@ import threading
 import time
 
 PORT = int(os.getenv("PORT", "8001"))
-BOARD_SIZE = 5
+BOARD_SIZE = 3
 CELL_COUNT = BOARD_SIZE * BOARD_SIZE
 
 games = {}
@@ -113,8 +113,8 @@ HTML_PAGE = """<!doctype html>
     input { padding: 8px; }
     .content-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; margin-top: 12px; }
     .game-column { min-width: 0; }
-    #board { margin-top: 18px; display: grid; grid-template-columns: repeat(5, 72px); gap: 8px; }
-    .cell { width: 72px; height: 72px; font-size: 30px; font-weight: bold; }
+    #board { margin-top: 18px; display: grid; grid-template-columns: repeat(3, 90px); gap: 8px; }
+    .cell { width: 90px; height: 90px; font-size: 36px; font-weight: bold; }
     .mono { font-family: monospace; }
     .hint { color: #444; }
     .side-image h3 { margin: 0 0 8px; font-size: 22px; letter-spacing: 0.04em; }

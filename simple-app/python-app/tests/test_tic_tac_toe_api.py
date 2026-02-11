@@ -57,17 +57,13 @@ class TicTacToeApiTests(unittest.TestCase):
         starter_token = token_x if starter == "X" else token_o
         other_token = token_o if starter == "X" else token_x
 
-        # Starter wins by filling top row in a 5x5 board.
+        # Starter wins by filling top row in a 3x3 board.
         self.request("POST", "/move", {"game_id": game_id, "token": starter_token, "position": 0})
-        self.request("POST", "/move", {"game_id": game_id, "token": other_token, "position": 5})
+        self.request("POST", "/move", {"game_id": game_id, "token": other_token, "position": 3})
         self.request("POST", "/move", {"game_id": game_id, "token": starter_token, "position": 1})
-        self.request("POST", "/move", {"game_id": game_id, "token": other_token, "position": 6})
-        self.request("POST", "/move", {"game_id": game_id, "token": starter_token, "position": 2})
-        self.request("POST", "/move", {"game_id": game_id, "token": other_token, "position": 7})
-        self.request("POST", "/move", {"game_id": game_id, "token": starter_token, "position": 3})
-        self.request("POST", "/move", {"game_id": game_id, "token": other_token, "position": 8})
+        self.request("POST", "/move", {"game_id": game_id, "token": other_token, "position": 4})
         _, end_state = self.request(
-            "POST", "/move", {"game_id": game_id, "token": starter_token, "position": 4}
+            "POST", "/move", {"game_id": game_id, "token": starter_token, "position": 2}
         )
         return game_id, token_x, token_o, end_state
 
@@ -82,7 +78,7 @@ class TicTacToeApiTests(unittest.TestCase):
 
         self.assertTrue(rematch["restarted"])
         self.assertIsNone(rematch["winner"])
-        self.assertEqual(rematch["board"], [" "] * 25)
+        self.assertEqual(rematch["board"], [" "] * 9)
         self.assertIn(rematch["turn"], ["X", "O"])
         self.assertFalse(rematch["closed"])
 
@@ -96,7 +92,7 @@ class TicTacToeApiTests(unittest.TestCase):
         self.assertEqual(rematch_no["rematch"]["declined_by"], "O")
 
         code, move_after_close = self.request(
-            "POST", "/move", {"game_id": game_id, "token": token_x, "position": 24}
+            "POST", "/move", {"game_id": game_id, "token": token_x, "position": 8}
         )
         self.assertEqual(code, 409)
         self.assertIn("closed", move_after_close["error"].lower())

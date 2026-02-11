@@ -22,10 +22,10 @@ Tvåspelar Tic-Tac-Toe som körs publikt på Render.
 
 ## Game Rules
 
-1. Spelet spelas på ett 5x5-rutnät.
+1. Spelet spelas på ett 3x3-rutnät.
 2. En spelare är `X`, den andra är `O`.
 3. Man får bara spela i tomma rutor.
-4. Fem i rad (vågrätt, lodrätt eller diagonalt) vinner.
+4. Tre i rad (vågrätt, lodrätt eller diagonalt) vinner.
 5. Om alla rutor fylls utan vinnare blir det oavgjort.
 
 ## Notes
