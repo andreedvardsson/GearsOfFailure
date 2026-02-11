@@ -106,11 +106,10 @@ HTML_PAGE = """<!doctype html>
     .cell { width: 90px; height: 90px; font-size: 36px; font-weight: bold; }
     .mono { font-family: monospace; }
     .hint { color: #444; }
-    .fun-panel { border: 1px solid #ddd; border-radius: 10px; padding: 10px; background: #fafafa; }
-    .fun-panel img { width: 100%; height: auto; border-radius: 8px; display: block; }
+    .side-image img { width: 100%; height: auto; display: block; }
     @media (max-width: 900px) {
       .content-wrap { grid-template-columns: 1fr; }
-      .fun-panel { max-width: 520px; }
+      .side-image { max-width: 520px; }
     }
     #rematchModal {
       position: fixed;
@@ -163,8 +162,8 @@ HTML_PAGE = """<!doctype html>
     <div class=\"game-column\">
       <div id=\"board\"></div>
     </div>
-    <aside class=\"fun-panel\">
-      <img src=\"https://upload.wikimedia.org/wikipedia/commons/d/da/Donald_Trump_%2825245031795%29.jpg\" alt=\"Sidobild\" />
+    <aside class=\"side-image\">
+      <img src=\"https://wallpapers.com/images/hd/donald-trump-pointing-6fgofw9b767sdphf.jpg\" alt=\"Sidobild\" />
     </aside>
   </div>
 
