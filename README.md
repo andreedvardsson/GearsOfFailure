@@ -6,7 +6,7 @@ Minimal Python app for quick local testing.
 
 ```bash
 cd simple-app/python-app
-python3 app.py
+python3 tic_tac_toe.py
 ```
 
 ## Endpoints

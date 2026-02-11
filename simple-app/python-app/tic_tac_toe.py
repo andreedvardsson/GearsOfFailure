@@ -2,6 +2,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 import json
 import os
+import random
 import secrets
 import threading
 import time
@@ -47,16 +48,43 @@ def role_for_token(game, token):
     return None
 
 
+def reset_round(game):
+    game["board"] = [" "] * 9
+    game["turn"] = random.choice(["X", "O"])
+    game["winner"] = None
+    game["rematch"] = {
+        "X": None,
+        "O": None,
+        "declined_by": None,
+    }
+
+
+def refresh_rematch_declined(game):
+    if game["rematch"]["X"] is False:
+        game["rematch"]["declined_by"] = "X"
+        return
+    if game["rematch"]["O"] is False:
+        game["rematch"]["declined_by"] = "O"
+        return
+    game["rematch"]["declined_by"] = None
+
+
 def game_payload(game_id, game, role):
     return {
         "game_id": game_id,
         "board": game["board"],
         "turn": game["turn"],
         "winner": game["winner"],
+        "closed": game["closed"],
         "you": role,
         "players": {
             "X": bool(game["players"]["X"]),
             "O": bool(game["players"]["O"]),
+        },
+        "rematch": {
+            "X": game["rematch"]["X"],
+            "O": game["rematch"]["O"],
+            "declined_by": game["rematch"]["declined_by"],
         },
     }
 
@@ -76,6 +104,38 @@ HTML_PAGE = """<!doctype html>
     .cell { width: 90px; height: 90px; font-size: 36px; font-weight: bold; }
     .mono { font-family: monospace; }
     .hint { color: #444; }
+    #rematchModal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-box {
+      background: #fff;
+      border-radius: 10px;
+      width: min(460px, calc(100% - 24px));
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+    .modal-title { margin: 0 0 8px; }
+    .modal-text { margin: 0 0 14px; }
+    .vote-row { display: flex; gap: 10px; }
+    .vote-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      border: 1px solid #bbb;
+      border-radius: 8px;
+      padding: 10px 14px;
+      background: #fff;
+    }
+    .vote-btn:hover { border-color: #666; }
+    .vote-icon { font-size: 18px; }
+    .modal-note { margin-top: 10px; color: #444; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -93,6 +153,18 @@ HTML_PAGE = """<!doctype html>
 
   <div id=\"board\"></div>
 
+  <div id=\"rematchModal\">
+    <div class=\"modal-box\">
+      <h2 class=\"modal-title\">Spela igen?</h2>
+      <p id=\"rematchResult\" class=\"modal-text\"></p>
+      <div class=\"vote-row\">
+        <button id=\"yesBtn\" class=\"vote-btn"><span class=\"vote-icon\">✅</span>Ja</button>
+        <button id=\"noBtn\" class=\"vote-btn"><span class=\"vote-icon\">❌</span>Nej</button>
+      </div>
+      <p id=\"rematchVotes\" class=\"modal-note\"></p>
+    </div>
+  </div>
+
   <script>
     let gameId = null;
     let token = null;
@@ -101,6 +173,9 @@ HTML_PAGE = """<!doctype html>
     const statusEl = document.getElementById('status');
     const shareEl = document.getElementById('share');
     const boardEl = document.getElementById('board');
+    const rematchModal = document.getElementById('rematchModal');
+    const rematchResult = document.getElementById('rematchResult');
+    const rematchVotes = document.getElementById('rematchVotes');
 
     function setStatus(msg) { statusEl.textContent = msg; }
 
@@ -119,6 +194,58 @@ HTML_PAGE = """<!doctype html>
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Request failed');
       return data;
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function renderShare(gameCode, roleText) {
+      const link = `${window.location.origin}/?game=${encodeURIComponent(gameCode)}`;
+      const prefix = roleText ? `${roleText} ` : '';
+      shareEl.innerHTML = `${prefix}Dela kod: ${gameCode} | Länk: <a id=\"shareLink\" href=\"${link}\" target=\"_blank\" rel=\"noopener\">${link}</a>`;
+      const linkEl = document.getElementById('shareLink');
+      linkEl.onclick = async (e) => {
+        e.preventDefault();
+        const ok = await copyText(link);
+        setStatus(ok ? 'Länken kopierad.' : 'Kunde inte kopiera länken.');
+      };
+    }
+
+    function voteText(v) {
+      if (v === true) return 'Ja';
+      if (v === false) return 'Nej';
+      return 'Väntar';
+    }
+
+    function showRematchPrompt() {
+      if (!state || !state.you || !state.players.O) {
+        rematchModal.style.display = 'none';
+        return;
+      }
+      if (state.closed) {
+        rematchResult.textContent = 'Session avslutad. Minst en spelare valde Nej.';
+        rematchVotes.textContent = `X: ${voteText(state.rematch.X)} | O: ${voteText(state.rematch.O)}`;
+        document.getElementById('yesBtn').style.display = 'none';
+        document.getElementById('noBtn').style.display = 'none';
+        rematchModal.style.display = 'flex';
+        return;
+      }
+      if (!state.winner) {
+        rematchModal.style.display = 'none';
+        return;
+      }
+      const winnerText = state.winner === 'draw' ? 'Oavgjort!' : `Spelare ${state.winner} vann.`;
+      rematchResult.textContent = `${winnerText} Spela igen?`;
+      rematchVotes.textContent = `X: ${voteText(state.rematch.X)} | O: ${voteText(state.rematch.O)}`;
+      document.getElementById('yesBtn').style.display = 'inline-flex';
+      document.getElementById('noBtn').style.display = 'inline-flex';
+      rematchModal.style.display = 'flex';
     }
 
     function renderBoard() {
@@ -151,12 +278,20 @@ HTML_PAGE = """<!doctype html>
         setStatus('Väntar på spelare O...');
         return;
       }
-      if (state.winner === 'draw') {
-        setStatus('Oavgjort.');
+      if (state.closed) {
+        setStatus('Session avslutad. Starta ett nytt spel för att fortsätta.');
         return;
       }
       if (state.winner) {
-        setStatus(`Spelare ${state.winner} vann.`);
+        if (state.rematch.declined_by) {
+          setStatus(`Spelare ${state.rematch.declined_by} valde Nej. Session avslutad.`);
+          return;
+        }
+        if (state.winner === 'draw') {
+          setStatus('Oavgjort. Väntar på svar: Spela igen?');
+          return;
+        }
+        setStatus(`Spelare ${state.winner} vann. Väntar på svar: Spela igen?`);
         return;
       }
       if (!state.you) {
@@ -176,6 +311,17 @@ HTML_PAGE = """<!doctype html>
         state = await api(`/state?game_id=${encodeURIComponent(gameId)}&token=${encodeURIComponent(token || '')}`);
         renderBoard();
         renderStatus();
+        showRematchPrompt();
+      } catch (e) {
+        setStatus(e.message);
+      }
+    }
+
+    async function submitRematch(decision) {
+      if (!gameId || !token) return;
+      try {
+        await api('/rematch', 'POST', { game_id: gameId, token, decision });
+        await refresh();
       } catch (e) {
         setStatus(e.message);
       }
@@ -186,7 +332,8 @@ HTML_PAGE = """<!doctype html>
         const data = await api('/invite', 'POST', {});
         gameId = data.game_id;
         token = data.token;
-        shareEl.textContent = `Dela kod: ${gameId} | Länk: ${window.location.origin}/?game=${gameId}`;
+        renderShare(gameId, '');
+        rematchModal.style.display = 'none';
         await refresh();
       } catch (e) {
         setStatus(e.message);
@@ -203,12 +350,16 @@ HTML_PAGE = """<!doctype html>
         const data = await api('/join', 'POST', { game_id: code });
         gameId = data.game_id;
         token = data.token;
-        shareEl.textContent = `Du gick med i spel ${gameId} som O.`;
+        renderShare(gameId, `Du gick med i spel ${gameId} som O. `);
+        rematchModal.style.display = 'none';
         await refresh();
       } catch (e) {
         setStatus(e.message);
       }
     };
+
+    document.getElementById('yesBtn').onclick = () => submitRematch('yes');
+    document.getElementById('noBtn').onclick = () => submitRematch('no');
 
     parseQuery();
     setInterval(refresh, 1200);
@@ -297,8 +448,14 @@ class Handler(BaseHTTPRequestHandler):
                 games[game_id] = {
                     "board": [" "] * 9,
                     "players": {"X": token_x, "O": None},
-                    "turn": "X",
+                    "turn": random.choice(["X", "O"]),
                     "winner": None,
+                    "closed": False,
+                    "rematch": {
+                        "X": None,
+                        "O": None,
+                        "declined_by": None,
+                    },
                 }
 
             self._send_json(201, {"game_id": game_id, "token": token_x, "you": "X"})
@@ -349,6 +506,10 @@ class Handler(BaseHTTPRequestHandler):
                     self._send_json(403, {"error": "Invalid token for this game"})
                     return
 
+                if game["closed"]:
+                    self._send_json(409, {"error": "Session is closed. Start a new game."})
+                    return
+
                 if game["winner"]:
                     self._send_json(409, {"error": "Game is already finished"})
                     return
@@ -367,10 +528,62 @@ class Handler(BaseHTTPRequestHandler):
 
                 game["board"][position] = role
                 game["winner"] = check_winner(game["board"])
-                if not game["winner"]:
+                if game["winner"]:
+                    game["rematch"]["X"] = None
+                    game["rematch"]["O"] = None
+                    game["rematch"]["declined_by"] = None
+                else:
                     game["turn"] = "O" if game["turn"] == "X" else "X"
 
                 payload = game_payload(game_id, game, role)
+
+            self._send_json(200, payload)
+            return
+
+        if parsed.path == "/rematch":
+            game_id = str(data.get("game_id", "")).upper()
+            token = str(data.get("token", ""))
+            decision = str(data.get("decision", "")).lower()
+
+            if not game_id or not token:
+                self._send_json(400, {"error": "game_id and token are required"})
+                return
+
+            if decision not in {"yes", "no"}:
+                self._send_json(400, {"error": "decision must be 'yes' or 'no'"})
+                return
+
+            with games_lock:
+                game = games.get(game_id)
+                if not game:
+                    self._send_json(404, {"error": "Game not found"})
+                    return
+
+                role = role_for_token(game, token)
+                if not role:
+                    self._send_json(403, {"error": "Invalid token for this game"})
+                    return
+
+                if game["closed"]:
+                    self._send_json(409, {"error": "Session is closed. Start a new game."})
+                    return
+
+                if not game["winner"]:
+                    self._send_json(409, {"error": "Rematch vote is only allowed after game end"})
+                    return
+
+                game["rematch"][role] = decision == "yes"
+                refresh_rematch_declined(game)
+
+                restarted = False
+                if game["rematch"]["X"] is True and game["rematch"]["O"] is True:
+                    reset_round(game)
+                    restarted = True
+                elif decision == "no":
+                    game["closed"] = True
+
+                payload = game_payload(game_id, game, role)
+                payload["restarted"] = restarted
 
             self._send_json(200, payload)
             return
