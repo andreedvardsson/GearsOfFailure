@@ -106,6 +106,7 @@ HTML_PAGE = """<!doctype html>
     .cell { width: 90px; height: 90px; font-size: 36px; font-weight: bold; }
     .mono { font-family: monospace; }
     .hint { color: #444; }
+    .side-image h3 { margin: 0 0 8px; font-size: 22px; letter-spacing: 0.04em; }
     .side-image img { width: 100%; height: auto; display: block; }
     @media (max-width: 900px) {
       .content-wrap { grid-template-columns: 1fr; }
@@ -163,7 +164,8 @@ HTML_PAGE = """<!doctype html>
       <div id=\"board\"></div>
     </div>
     <aside class=\"side-image\">
-      <img src=\"https://wallpapers.com/images/hd/donald-trump-pointing-6fgofw9b767sdphf.jpg\" alt=\"Sidobild\" />
+      <h3>WANNA PLAY?</h3>
+      <img src=\"https://i.insider.com/62f4b336cc15bf00182fe160?width=1000&format=jpeg&auto=webp\" alt=\"Sidobild\" />
     </aside>
   </div>
 
