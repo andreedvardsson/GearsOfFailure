@@ -10,7 +10,7 @@ export default function StatusPage() {
   const mongoUri = process.env.MONGODB_URI || '';
   const mongoConfigured = !!(
     mongoUri &&
-    mongoUri !== 'mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority' &&
+    mongoUri !== '__SET_MONGODB_URI_IN_ENV__' &&
     mongoUri !== ''
   );
 

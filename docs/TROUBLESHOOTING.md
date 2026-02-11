@@ -90,7 +90,7 @@ MONGO_USERNAME=admin
 MONGO_PASSWORD=password
 
 # These must match MONGODB_URI
-MONGODB_URI=mongodb://admin:password@db:27017/team-flags-edu?authSource=admin
+MONGODB_URI=__SET_MONGODB_URI_IN_ENV__
 ```
 
 ### Reset MongoDB completely

@@ -52,7 +52,7 @@ services:
     container_name: team-flags-app
     environment:
       - NODE_ENV=${NODE_ENV:-production}
-      - MONGODB_URI=${MONGODB_URI:-mongodb://admin:password@db:27017/team-flags-edu?authSource=admin}
+      - MONGODB_URI=${MONGODB_URI:-__SET_MONGODB_URI_IN_ENV__}
       - MONGODB_DB=${MONGODB_DB:-team-flags-edu}
       - STUDENTS_COLLECTION=${STUDENTS_COLLECTION:-students}
       - APP_VERSION=${APP_VERSION:-1.0.0}

@@ -101,11 +101,11 @@ code .env.local  # or nano .env.local
 
 **Option A - Use the provided test database** (easiest):
 ```
-MONGODB_URI=mongodb+srv://test-user:PROVIDED-PASSWORD@cluster.mongodb.net/
+MONGODB_URI=__PROVIDED_BY_TEACHER__
 MONGODB_DB=team-flags-edu
 STUDENTS_COLLECTION=students
 ```
-*(Läraren will provide the real credentials)*
+*(Läraren will provide the real value separately)*
 
 **Option B - Create your own** (recommended for later):
 1. Go to https://www.mongodb.com/cloud/atlas/register

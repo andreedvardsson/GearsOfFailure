@@ -10,10 +10,10 @@ import { MongoClient, Db } from 'mongodb';
  * - MONGODB_DB: Database name (default: 'team-flags-edu')
  *
  * For Docker Compose (local):
- *   MONGODB_URI=mongodb://admin:password@db:27017/team-flags-edu?authSource=admin
+ *   MONGODB_URI=<set-in-.env>
  *
  * For MongoDB Atlas (cloud):
- *   MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/team-flags-edu
+ *   MONGODB_URI=<atlas-connection-string>
  */
 
 const uri = process.env.MONGODB_URI || '';
@@ -50,8 +50,8 @@ export async function getDatabase(): Promise<Db> {
   if (!clientPromise) {
     throw new Error(
       'MongoDB not configured. Set MONGODB_URI environment variable.\n' +
-        'For local Docker: mongodb://admin:password@db:27017/team-flags-edu?authSource=admin\n' +
-        'For Atlas: mongodb+srv://user:pass@cluster.mongodb.net/team-flags-edu'
+        'For local Docker: set MONGODB_URI in your .env file\n' +
+        'For Atlas: set your Atlas connection string in MONGODB_URI'
     );
   }
   const client = await clientPromise;
