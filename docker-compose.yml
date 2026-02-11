@@ -1,0 +1,125 @@
+# Team Flags EDU - Docker Compose Configuration
+# Week 3: Multi-container orchestration with 3 services
+#
+# Services:
+#   1. nginx    - Reverse proxy (port 80)
+#   2. app      - Next.js application (port 3000)
+#   3. db       - MongoDB database (port 27017)
+#
+# Usage:
+#   Start:    docker compose up --build
+#   Stop:     docker compose down
+#   Logs:     docker compose logs -f
+#   Rebuild:  docker compose up --build --force-recreate
+#
+# First time? Copy .env.example to .env first!
+
+services:
+  # ============================================
+  # Nginx - Reverse Proxy
+  # ============================================
+  # Routes traffic to the Next.js app
+  # Adds security headers and handles static caching
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: team-flags-nginx
+    ports:
+      - "${NGINX_PORT:-80}:80"
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - frontend-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # ============================================
+  # App - Next.js Application
+  # ============================================
+  # The main application server
+  # Connects to MongoDB for data storage
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: team-flags-app
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - MONGODB_URI=${MONGODB_URI:-mongodb://admin:password@db:27017/team-flags-edu?authSource=admin}
+      - MONGODB_DB=${MONGODB_DB:-team-flags-edu}
+      - STUDENTS_COLLECTION=${STUDENTS_COLLECTION:-students}
+      - APP_VERSION=${APP_VERSION:-1.0.0}
+      - MY_CUSTOM_MESSAGE=${MY_CUSTOM_MESSAGE}
+      # Firebase (optional - for Week 5+)
+      - NEXT_PUBLIC_FIREBASE_API_KEY=${NEXT_PUBLIC_FIREBASE_API_KEY:-}
+      - NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN:-}
+      - NEXT_PUBLIC_FIREBASE_PROJECT_ID=${NEXT_PUBLIC_FIREBASE_PROJECT_ID:-}
+      - FIREBASE_ADMIN_PROJECT_ID=${FIREBASE_ADMIN_PROJECT_ID:-}
+      - FIREBASE_ADMIN_CLIENT_EMAIL=${FIREBASE_ADMIN_CLIENT_EMAIL:-}
+      - FIREBASE_ADMIN_PRIVATE_KEY=${FIREBASE_ADMIN_PRIVATE_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - frontend-net
+      - backend-net
+    restart: unless-stopped
+    # Note: Port 3000 is NOT exposed externally - nginx proxies to it
+    expose:
+      - "3000"
+
+  # ============================================
+  # Database - MongoDB
+  # ============================================
+  # Persistent data storage with authentication
+  # Data is stored in a named volume
+  db:
+    image: mongo:7
+    container_name: team-flags-db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-password}
+      - MONGO_INITDB_DATABASE=${MONGODB_DB:-team-flags-edu}
+    volumes:
+      - mongo-data:/data/db
+      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - backend-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    # Expose port for development/debugging only
+    # Remove or comment out in production!
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+
+# ============================================
+# Networks
+# ============================================
+# Isolate frontend and backend traffic
+networks:
+  frontend-net:
+    name: team-flags-frontend
+    driver: bridge
+  backend-net:
+    name: team-flags-backend
+    driver: bridge
+
+# ============================================
+# Volumes
+# ============================================
+# Persistent storage for MongoDB data
+volumes:
+  mongo-data:
+    name: team-flags-mongo-data

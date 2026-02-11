@@ -1,0 +1,45 @@
+{
+  "name": "team-flags-edu",
+  "version": "1.0.0",
+  "description": "Educational DevSecOps project for learning Docker, CI/CD, and container security",
+  "private": false,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@m-lab/ndt7": "^0.1.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "dotenv": "^17.2.3",
+    "firebase": "^12.8.0",
+    "firebase-admin": "^13.6.0",
+    "lucide-react": "^0.562.0",
+    "mongodb": "^7.0.0",
+    "next": "16.1.3",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "tailwind-merge": "^3.4.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20.19.30",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.3",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "keywords": [
+    "devsecops",
+    "docker",
+    "nextjs",
+    "education",
+    "chas-academy"
+  ],
+  "author": "Retro 87",
+  "license": "MIT"
+}
