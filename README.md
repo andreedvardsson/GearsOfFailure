@@ -4,6 +4,8 @@
 
 Tvåspelar Tic-Tac-Toe som körs publikt på Render.
 
+Detta projekt är gjort av en vibe coder med hjälp av OpenAI Codex.
+
 ## Play Online
 
 - App: `https://gearsoffailure.onrender.com`
