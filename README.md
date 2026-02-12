@@ -1,4 +1,4 @@
-# GearsOfFailure
+# GearsOfFailure - The Tic-Tac-Toe Game
 
 ![CI Status](https://github.com/andreedvardsson/GearsOfFailure/actions/workflows/ci.yml/badge.svg)
 
