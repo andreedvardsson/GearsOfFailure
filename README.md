@@ -4,6 +4,8 @@
 
 Tvåspelar Tic-Tac-Toe som körs publikt på Render.
 
+![Tic-Tac-Toe Board](https://i.ibb.co/VYWvJ2K5/Chat-GPT-Image-12-feb-2026-14-56-21.png)
+
 Detta projekt är gjort av en vibe coder med hjälp av OpenAI Codex.
 
 ## Play Online
